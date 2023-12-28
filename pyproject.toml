@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "ml-book"
+version = "0.0.1"
+description = "Yet another ML Book"
+authors = ["Philipp Zettl <zettl.philipp@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "ml_book"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+jupyter = "^1.0.0"
+notebook = "^7.0.6"
+numpy = "^1.26.2"
+scikit-learn = "^1.3.2"
+matplotlib = "^3.8.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
