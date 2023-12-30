@@ -1,0 +1,36 @@
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{graphicx}
+\usepackage[]{mdframed}
+\usepackage{algorithm2e}
+\usepackage{svg}
+\usepackage{enumitem}
+\usepackage{refcount}
+\usepackage{cleveref}
+\usepackage{cite}
+\usepackage{bookmark}
+% draw a frame around given text
+\newcommand{\coderef}[1]{%
+  \hyperref[#1]{Code \numberstringnum{\getrefnumber{#1}}}%
+}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\framedtext}[1]{%
+\vspace{1em}%
+\par%
+\noindent\fbox{%
+    \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{#1}%
+}%
+\vspace{1em}%
+}
+\SetKwComment{Comment}{\# }{}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+

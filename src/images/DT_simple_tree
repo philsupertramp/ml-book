@@ -1,0 +1,8 @@
+digraph {
+	"root
+node" -> "left
+child"
+	"root
+node" -> "right
+child"
+}

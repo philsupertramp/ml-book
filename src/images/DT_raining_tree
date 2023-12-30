@@ -1,0 +1,11 @@
+digraph {
+	a1 [label="Raining?"]
+	b1 [label=inside]
+	b2 [label="Cold?"]
+	c1 [label=inside]
+	c2 [label=outside]
+	a1 -> b1 [label=yes]
+	a1 -> b2 [label=no]
+	b2 -> c1
+	b2 -> c2
+}

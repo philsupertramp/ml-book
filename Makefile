@@ -1,7 +1,7 @@
 BUILD_DIR       =       $(shell pwd)
 
 image:
-	docker build -t latex-builder:latest .
+	docker build -t latex-builder:latest . #2> /dev/null
 
 build:image
 	mkdir -p build

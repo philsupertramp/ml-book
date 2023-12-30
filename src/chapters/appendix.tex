@@ -1,0 +1,41 @@
+\appendix
+\chapter{Visualizations}
+
+\begin{figure}[h]
+  \centering
+  \begin{minipage}{.45\textwidth}
+  \centering
+    \includesvg[width=.95\textwidth]{images/NCC_frame_0.svg}
+    %\caption{Both means start at the origin}
+    \label{fig:ncc_streaming_0}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{.45\textwidth}
+  \centering
+    \includesvg[width=.95\textwidth]{images/NCC_frame_1.svg}
+    %\caption{The mean of the blue class (red) is updated.}
+    \label{fig:ncc_streaming_1}
+  \end{minipage}\\
+  \begin{minipage}{.45\textwidth}
+  \centering
+    \includesvg[width=.95\textwidth]{images/NCC_frame_2.svg}
+    %\caption{After adding the second blue sample, the mean is updated again to its final position}
+    \label{fig:ncc_streaming_2}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{.45\textwidth}
+  \centering
+    \includesvg[width=.95\textwidth]{images/NCC_frame_3.svg}
+    %\caption{The first orange sample is added to the mean of the orange class (green)}
+    \label{fig:ncc_streaming_3}
+  \end{minipage}\\
+  \begin{minipage}{.45\textwidth}
+  \centering
+    \includesvg[width=.95\textwidth]{images/NCC_frame_4.svg}
+    %\caption{The last orange sample is added to the mean of the orange class (green) and the mean is updated to its final position}
+    \label{fig:ncc_streaming_4}
+  \end{minipage}
+  \caption{Nearest Centroid Classifier (NCC) with streaming updates for 4 samples of two classes. The blue class is represented by the red mean and the orange class by the green mean. The blue samples are represented by blue dots and the orange samples by orange dots. The mean of the blue class is updated after adding the first (Figure \ref{fig:ncc_streaming_1}) and second blue sample (Figure \ref{fig:ncc_streaming_2}). The mean of the orange class is updated after adding the first (Figure \ref{fig:ncc_streaming_3}) and last orange sample (Figure \ref{fig:ncc_streaming_4}).}
+  \label{fig:ncc_batched_streaming}
+\end{figure}
+
