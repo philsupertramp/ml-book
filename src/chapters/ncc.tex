@@ -1,4 +1,5 @@
 \chapter{Nearest Centroid Classifier}
+\label{ch:ncc}
 The first classification algorithm we will look into is the Nearest Centroid Classidfier.
 It is a widely used algorithm for classification and is also one of the simplest ones to implement.
 We will start by looking at the mathematical background of the algorithm and then implement it in Python.
@@ -62,7 +63,7 @@ In this example we would compute the mean of all $\bigtriangleup$ $\vec{\mu}_\bi
 \begin{figure}[h]
   \centering
   \includegraphics[width=.75\textwidth]{images/prototypes_2.eps}
-  \caption{Mean values as prototypes for different categories}
+  \caption{Mean values as prototypes for different categories are used to determine the label of a new data point}
   \label{fig:prototypes_2}
 \end{figure}
 
@@ -284,9 +285,10 @@ with class $0$ the orange class and class $1$ the blue class.
 \begin{minipage}{.45\textwidth}
   \centering
   \includesvg[width=.95\textwidth]{images/NCC_lin_classifier.svg}
-  \caption{NCC as linear classifier}
+  \caption{NCC as linear classifier, the blue line visualizes the decision boundary $\vec{\omega}$ and the green line is the decision threshold $\beta$}
   \label{fig:ncc_linear_classifier}
 \end{minipage}
+\vspace{1cm}
 
 This is more or less all we need to know from linear classifiers and we can now derive it from the NCC algorithm.
 

@@ -1,4 +1,5 @@
 \chapter{Decision Trees}
+\label{ch:decision-trees}
 
 Decision trees are another group of supervised learning algorithms.
 They are used for both classification and regression problems.
@@ -315,4 +316,82 @@ The biggest and main disadvantage of decision trees is that deep trees are prone
 One solution for this is called \textit{Random Forrest}. It is an ensemble method that combines multiple decision trees to reduce the risk of overfitting without sacrificing bias.
 Random Forrests are more robust and generally better solvers than single decision trees.
 
+
+\section{Decision Trees in scikit-learn}
 You can find an implementation based on NumPy in the accomodating Jupyter notebook to this chapter.
+In this section we will look at the implementation of decision trees in scikit-learn and apply it to the Iris data set.
+
+The decision tree classifier is implemented in the \texttt{DecisionTreeClassifier} class.
+It is, as it name suggests, the implementation of the classification variant of Decision Trees and has the following parameters
+\begin{itemize}
+  \item \texttt{criterion}: The impurity metric to use. Either \texttt{gini} or \texttt{entropy}.
+  \item \texttt{max\_depth}: The maximum depth of the tree. If \texttt{None}, the tree is grown until all leaves are pure.
+  \item \texttt{min\_samples\_split}: The minimum number of samples required to split an internal node.
+  \item \texttt{min\_samples\_leaf}: The minimum number of samples required to be at a leaf node.
+  \item \texttt{min\_impurity\_decrease}: A node will be split if this split induces a decrease of the impurity greater than or equal to this value.
+  \item \texttt{class\_weight}: Weights associated with classes in the form \texttt{\{class\_label: weight\}}.
+  \item \texttt{random\_state}: The seed of the pseudo random number generator to use when shuffling the data.
+  \item \texttt{max\_features}: The number of features to consider when looking for the best split.
+\end{itemize}
+
+You can see an example usage of the decision tree classifier in Listing \ref{lst:dtc}.
+\begin{lstlisting}[language=Python, caption={Example usage of the decision tree classifier.}, label={lst:dtc}]
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+
+# load data
+iris = load_iris()
+X = iris.data
+
+# split into train and test set
+X_train, X_test, y_train, y_test = train_test_split(
+  X, iris.target, test_size=0.2, random_state=42
+)
+
+dtc = DecisionTreeClassifier()
+dtc.fit(X_train, y_train)
+
+print('Accuracy:', dtc.score(X_test, y_test))
+\end{lstlisting}
+As discussed in the HPO chapter (Chapter \ref{ch:hpo}), we can use for instance the \texttt{GridSearchCV} class to find the best parameters for our model.
+You can see an example usage of this in Listing \ref{lst:dtc_gridsearch}.
+\begin{lstlisting}[language=Python, caption={Example usage of the decision tree classifier with grid search.}, label={lst:dtc_gridsearch}]
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+
+# load data
+iris = load_iris()
+X = iris.data
+
+# split into train and test set
+X_train, X_test, y_train, y_test = train_test_split(
+  X, iris.target, test_size=0.2, random_state=42
+)
+
+dtc = DecisionTreeClassifier()
+
+params = {
+  'criterion': ['gini', 'entropy'],
+  'max_depth': [None, 2, 4, 6, 8, 10],
+  'min_samples_split': [2, 4, 6, 8, 10],
+  'min_samples_leaf': [1, 2, 3, 4, 5],
+  'min_impurity_decrease': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
+  'class_weight': [None, 'balanced'],
+  'random_state': [42],
+  'max_features': [None, 'auto', 'sqrt', 'log2']
+}
+
+grid = GridSearchCV(dtc, params, cv=5, n_jobs=-1)
+grid.fit(X_train, y_train)
+
+print('Best score:', grid.best_score_)
+print('Best params:', grid.best_params_)
+print('Accuracy:', grid.score(X_test, y_test))
+\end{lstlisting}
+
+
+
+\framedtext{\color{red}{TODO:}} Finalize example
+

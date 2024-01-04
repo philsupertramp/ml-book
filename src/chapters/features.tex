@@ -1,4 +1,5 @@
 \chapter{Feature Extraction}
+\label{ch:feature-extraction}
 In this chapter we will talk about feature extraction, which is an essential part of any ML project/workflow.
 We will introduce these by looking at a simple example and then look at some more advanced techniques.
 After we covered most common approaches we will look into a very important concept, \underline{Machine Learning Pipelines}.
@@ -242,8 +243,8 @@ the inner workings of hash maps in the great 2020 blog post by Adam Gold \cite{a
 
 \subsubsection{Example \#1}
 Let us look at an example of how to use these techniques in Python on a specific task.
-We will use the 20 newsgroups data set, which is a collection of 20,000 newsgroup documents, partitioned (nearly) evenly across 20 different newsgroups.
-You can find more information about this data set here: \url{http://qwone.com/$\approx$jason/20Newsgroups/}.
+We will use the 20 newsgroups data set, which is a collection of 20,000 newsgroup documents, partitioned (nearly) evenly across all newsgroups.
+You can find more information about this data set here: \url{http://qwone.com/~jason/20Newsgroups/}.
 Essentially, we will train a model to classify the newsgroup of a given document.
 We will use the \lstinline{sklearn.datasets.fetch_20newsgroups} function to download the data set and then use the \lstinline{sklearn.feature_extraction.text.TfidfVectorizer}
 to transform the text into a BoW representation.
@@ -265,12 +266,14 @@ X_test = vectorizer.transform(newsgroups_test.data)
 # Train a Nearest Centroid Classifier
 clf = NearestCentroid()
 clf.fit(X_train, newsgroups_train.target)
-print(f"Accuracy: {clf.score(X_test, newsgroups_test.target)}")
+acc = (clf.predict(X_test) == imdb_test.target).mean()
+print(f"Accuracy: {acc}")
 
 # Train a KNN Classifier
 clf = KNeighborsClassifier()
 clf.fit(X_train, newsgroups_train.target)
-print(f"Accuracy: {clf.score(X_test, newsgroups_test.target)}")
+acc = (clf.predict(X_test) == imdb_test.target).mean()
+print(f"Accuracy: {acc}")
 \end{lstlisting}
 
 \begin{table}[h]
@@ -290,7 +293,7 @@ print(f"Accuracy: {clf.score(X_test, newsgroups_test.target)}")
 Running the code in \coderef{code:20-newsgroups} will result in the accuracy scores shown in Table \ref{tab:20-newsgroups}.
 You will notice that albeit the simplicity of the NCC model it performs better than the KNN model. Furthermore, the NCC model is also substantially faster to train.
 
-A better approach for this problem would be to use the Logistic Regression (LogReg) model. We will look into this model in the future, but briefly apply it to the news group data set to demonstrate its performance.
+A better approach for this problem would be to use the Logistic Regression (LogReg) model. We will look into this model in the future (Chapter \ref{ch:regression}), for now we will consider it a black box and apply it to the news group data set to demonstrate its performance on this task.
 
 \begin{lstlisting}[language=Python, caption={20 newsgroups example with Logistic Regression}, label={code:20-newsgroups-lr}]
 from sklearn.datasets import fetch_20newsgroups
@@ -331,7 +334,7 @@ We will look into LogReg in the future, but for now it is important to understan
 And apparently, the data set is not linearly separable, which is why the linear classification models perform so poorly.
 
 \subsubsection{Example \#2}
-In this example we will look into a different data set, the \textit{IMDB} data set$\approx$/cite{maas-EtAl:2011:ACL-HLT2011} (\url{http://ai.stanford.edu/$\approx$amaas/data/sentiment/}).
+In this example we will look into a different data set, the \textit{IMDB} data set~\cite{maas-EtAl:2011:ACL-HLT2011} (\url{http://ai.stanford.edu/~amaas/data/sentiment/}).
 This data set contains 50,000 movie reviews from the Internet Movie Database, labeled by sentiment (positive/negative/unsupervised).
 We will use the \lstinline{sklearn.datasets.load_files} function to download the data set and then use the \lstinline{sklearn.feature_extraction.text.TfidfVectorizer}
 to transform the text into a BoW representation.
@@ -360,7 +363,8 @@ print(f"Accuracy: {clf.score(X_test, imdb_test.target)}")
 # Train a Logistic Regression Classifier
 clf = LogisticRegression(random_state=42, solver='newton-cg', C=100.)
 clf.fit(X_train, imdb_train.target)
-print(f"Accuracy: {(clf.predict(X_test) == imdb_test.target).mean()}")
+acc = (clf.predict(X_test) == imdb_test.target).mean()
+print(f"Accuracy: {acc}")
 \end{lstlisting}
 As the results in Table \ref{tab:imdb} show, the NCC model performs better on this task than the LogReg model.
 \begin{table}[h]
@@ -411,7 +415,8 @@ clf = MLPClassifier(
   learning_rate_init=.1
 )
 clf.fit(X_train, imdb_train.target)
-print(f"Accuracy: {(clf.predict(X_test) == imdb_test.target).mean()}")
+acc = (clf.predict(X_test) == imdb_test.target).mean()
+print(f"Accuracy: {acc}")
 \end{lstlisting}
 The results in Table \ref{tab:imdb-mlp} show that the MLP model performs significantly better than the NCC and LogReg models.
 
@@ -640,7 +645,7 @@ And we don't want to spend so much time and money on training these models.
 Thankfully, we don't need to because there are many pretrained models publicly available.
 These models are trained foro a long time on very large datasets, e.g. ImageNet\cite{deng2009imagenet}, for us!
 All we have to do is to download these models and run them as feature extractors.
-You can read more about CNNs in my thesis \cite{PhilippZettl:2022}.
+You can read more about CNNs in \cite{PhilippZettl:2022} or Chapter \ref{ch:neural-networks}.
 
 
 Essentially, CNNs are combinations of convolutional filter masks that are stacked on top of each other adding more and more complexity to the model.
@@ -761,5 +766,5 @@ Applying those three matrices to our image $X$ we get three images $X_{red}, X_{
 \end{minipage}
 \end{figure}
 
-For instance we can build a convolutional filter to 
+\framedtext{\color{red}{TODO:}} Implement example for CNN feature extraction
 
