@@ -354,7 +354,7 @@ dtc.fit(X_train, y_train)
 
 print('Accuracy:', dtc.score(X_test, y_test))
 \end{lstlisting}
-As discussed in the HPO chapter (Chapter \ref{ch:hpo}), we can use for instance the \texttt{GridSearchCV} class to find the best parameters for our model.
+As discussed in the HPO chapter (Section \ref{sec:hpo}), we can use for instance the \texttt{GridSearchCV} class to find the best parameters for our model.
 You can see an example usage of this in Listing \ref{lst:dtc_gridsearch}.
 \begin{lstlisting}[language=Python, caption={Example usage of the decision tree classifier with grid search.}, label={lst:dtc_gridsearch}]
 from sklearn.datasets import load_iris

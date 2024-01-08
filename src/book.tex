@@ -41,19 +41,22 @@
 \begin{document}
 \pagestyle{fancy}
 %\begin{multicols}{2}
+\pagenumbering{Roman}% Capital 'R': uppercase Roman numerals
+\input{chapters/foreword}
+\newpage
+\pagenumbering{arabic}% Capital 'R': uppercase Roman numerals
 \tableofcontents
 %\end{multicols}
 \newpage
 
+\setcounter{page}{1}
 \input{chapters/intro}
 
-\input{chapters/math}
+\input{chapters/Math}
 
 \input{chapters/ncc}
 
 \input{chapters/knn}
-
-\input{chapters/hpo}
 
 \input{chapters/features}
 
@@ -63,6 +66,7 @@
 \chapter{Metrics}
 \framedtext{\color{red}{TODO:}}
 \chapter{Model Evaluation}
+\label{ch:model-evaluation}
 \framedtext{\color{red}{TODO:}}
 
 \input{chapters/perceptron}
@@ -88,12 +92,9 @@
 \chapter{Clustering}
 \label{ch:clustering}
 \framedtext{\color{red}{TODO:}}
-\chapter{Artificial Neural Networks}
-\label{ch:neural-networks}
-\framedtext{\color{red}{TODO:}}
-\chapter{Deep Learning}
-\label{ch:deep-learning}
-\framedtext{\color{red}{TODO:}}
+
+\input{chapters/neural-networks}
+
 \chapter{Natural Language Processing (NLP)}
 \label{ch:nlp}
 \framedtext{\color{red}{TODO:}}
@@ -107,11 +108,14 @@
 \label{ch:reinforcement-learning}
 \framedtext{\color{red}{TODO:}}
 
+\newpage
+{
+  \pagenumbering{roman}
+  \setcounter{page}{1}
+  \input{chapters/appendix}
 
-\input{chapters/appendix}
-
-\addcontentsline{toc}{chapter}{Bibliography}
-\bibliographystyle{/opt/ieeetran/IEEEtran/bibtex/IEEEtran}
-\bibliography{/opt/ieeetran/IEEEtran/bibtex/IEEEabrv,refs}
-
+  \addcontentsline{toc}{chapter}{Bibliography}
+  \bibliographystyle{/opt/ieeetran/IEEEtran/bibtex/IEEEtran}
+  \bibliography{/opt/ieeetran/IEEEtran/bibtex/IEEEabrv,refs}
+}
 \end{document}

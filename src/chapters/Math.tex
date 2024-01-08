@@ -1,0 +1,150 @@
+\chapter{Mathematics}
+\label{ch:math}
+The following chapter will give a brief introduction to the Mathematics required to get started in the realm of Data Science/Machine Learning.
+There are many more things to cover, but this would go beyond of the scope of this book. The following chapter will only cover the most important concepts and provide links to further reading, as well as whenever possible, to implementations of the concepts. 
+Apart from this further resources will provide for deeper research, whenever necessary.
+
+The former is extremely important and will during the daily life as a Machine Learning Engineer or Data Scientist one will spend 80\% of the time 
+\begin{itemize}
+  \item Collecting Data
+  \begin{itemize}
+    \item Web Scraping
+    \item searching for similar data sets
+    \item Manual labelling of existing data
+  \end{itemize}
+  \item Preprocessing Data
+  \begin{itemize}
+    \item Data Cleaning
+    \item Data Normalization
+    \item Feature Engineering
+    \item Exploring Data
+    \item Visualizing Data
+  \end{itemize}
+\end{itemize}
+
+The remaining 20\% will be spent on
+\begin{itemize}
+  \item Developing an ML Model
+  \begin{itemize}
+    \item Choosing the right Model
+    \item Choosing the right Hyperparameters
+    \item Training the Model
+    \item Evaluating the Model
+  \end{itemize}
+\end{itemize}
+Throughout all ML projects one will encounter a lot of Mathematics as well as Computer Science and must apply different techniques of linear algebra and probability theory.
+
+Apart from this fundamental knowledge, one must also be able to read and understand scientific papers, which are usually written in a very formal and mathematical language. 
+
+This document will list most required techniques and areas in Mathematics that are required to get started in the field of Machine Learning. It will not go into detail on how to implement these techniques, but rather give a brief overview of the most important concepts and provide links to further reading.
+
+Before we get started, let's review some terms we will use in the following document.
+
+\section{Vectors}
+We're assuming that the reader has a general understanding of vectors.
+Let $\vec{x} \in \R^n$ be a list of $n$ numbers, which can be written as a column or row. This is called a vector. 
+The notation $\vec{x} \in \R^n$ represents a row-vector of $n$ real-valued numbers. $\vec{x} \in \R^{1 \times m}$ represents a column-vector of $1$ row and $m$ columns.
+\subsection{Operators}
+Vectors can be combined using basic arithmetic operators, such as addition, subtraction, multiplication and division.
+
+\textbf{Addition} is defined as follows:
+\begin{align*}
+  f&(\vec{x}, \vec{y}) \rightarrow \vec{z},\\
+  f&: (\R^n, \R^n) \mapsto \R^n\\
+  &\vec{x} + \vec{y} = \begin{bmatrix}
+    x_1 + y_1 \\ x_2 + y_2 \\ \vdots \\ x_n + y_n
+  \end{bmatrix} = \vec{z}
+\end{align*}\\
+\textbf{Multiplication with a scalar (Scaling)} is defined as follows:
+\begin{align*}
+  f&(\vec{x}, \lambda) \rightarrow \vec{z},\\
+  f&: (\R^n, \R) \mapsto \R^n\\
+  &\vec{x} = \begin{bmatrix}
+    \lambda x_1 \\ \lambda x_2 \\ \vdots \\ \lambda x_n
+  \end{bmatrix} = \vec{z}
+\end{align*}
+Subtraction and Division are defined analogously.
+Of course these operations can also be combined, e.g.:
+\begin{align*}
+  \lambda \vec{x} - \frac{1}{\beta} \vec{y} = \begin{bmatrix}
+    \lambda x_1 - \frac{1}{\beta} y_1 \\ \lambda x_2 - \frac{1}{\beta} y_2 \\ \vdots \\ \lambda x_n - \frac{1}{\beta} y_n
+  \end{bmatrix}
+\end{align*}
+
+Apart from the \dq Standard\dq operations, there are also some special operations that are defined on vectors. These are:
+\begin{itemize}
+  \item Dot Product
+  \item Hadamard Product
+\end{itemize}
+and a few more. Here we will only look into the Dot Product and the Hadamard Product.
+
+The \textbf{Dot Product}, or \textbf{Scalar Product}, is defined as follows:
+\begin{align*}
+  f&(\vec{x}, \vec{y}) \rightarrow \vec{z},\\
+  f&: (\R^n, \R^n) \mapsto \R\\
+  &\vec{x} \cdot \vec{y} = \sum_{i=1}^{n} x_i y_i = x_1 y_1 + x_2 y_2 + \dots + x_n y_n
+\end{align*}
+it can be used as a similarity measure between two vectors. The larger the dot product, the more similar the vectors are.
+
+The \textbf{Hadamard Product}, the element-wise Product, is defined as follows:
+\begin{align*}
+  f&(\vec{x}, \vec{y}) \rightarrow \vec{z},\\
+  f&: (\R^n, \R^n) \mapsto \R^n\\
+  &\vec{x} \circ \vec{y} = \begin{bmatrix}
+    x_1 y_1 \\ x_2 y_2 \\ \vdots \\ x_n y_n
+  \end{bmatrix}
+\end{align*}
+
+Last, but not least, there is the operator of \textit{Transposition}. Transposition is defined as follows:
+\begin{align*}
+  f&(\vec{x}) \rightarrow \vec{z},\\
+  f&: (\R^n) \mapsto \R^{1 \times n}\\
+  &\vec{x}^T = \begin{bmatrix}
+    x_1 & x_2 & \dots & x_n
+  \end{bmatrix}
+\end{align*}
+This operator transforms a column-vector into a row-vector and vice versa.
+
+\subsection{Norms}
+In order to compare vectors another group of operators is required, the so called norms.
+For vectors these are the $p$-norms, the $L^p$-norms and the $L^{\infty}$-norm.
+
+The three most commonly used norms are the $L^1$-norm, the $L^2$-norm and the $L^{\infty}$-norm. The general $L^p$-norm is defined as follows:
+\begin{align*}
+  f&(\vec{x}) \rightarrow \vec{z},\\
+  f&: (\R^n) \mapsto \R\\
+  &\norm{\vec{x}}_p = \left(\sum_{i=1}^{n} \abs{x_i}^p\right)^{\frac{1}{p}}
+  \end{align*}
+The $L^1$-norm is also called the \textit{Manhattan Distance} or \textit{Taxicab Norm}. It has the following definition:
+\begin{align*}
+  f&(\vec{x}) \rightarrow \vec{z},\\
+  f&: (\R^n) \mapsto \R\\
+  &\norm{\vec{x}}_1 = \sum_{i=1}^{n} \abs{x_i}
+\end{align*}
+The $L^2$-norm is also called the \textit{Euclidean Norm}, the vector's length, and is defined as follows:
+\begin{align*}
+  f&(\vec{x}) \rightarrow \vec{z},\\
+  f&: (\R^n) \mapsto \R\\
+  &\norm{\vec{x}}_2 = \sqrt{\sum_{i=1}^{n} \abs{x_i}^2}
+\end{align*}
+And the $L^{\infty}$-norm is defined as:
+\begin{align*}
+  f&(\vec{x}) \rightarrow \vec{z},\\
+  f&: (\R^n) \mapsto \R\\
+  &\norm{\vec{x}}_{\infty} = \max_{i=1}^{n} \abs{x_i}
+\end{align*}
+
+Mainly the $L^1$-norm and the $L^2$-norm are used in Machine Learning. The $L^1$-norm is used when the number of features is very large and only a few of them are important. The $L^2$-norm is used when all features are important.
+But we will see more about this throughout the document.
+
+\textbf{Note:} The $L^2$-norm indicates the length of a vector and can be used to \textit{rescale} the vector to unit length.
+
+Earlier we've mentioned the Dot-Product to be a measure of similarity, but this is not fully correct. We can only apply the Dot-Product as a similarity measure if we ensure that the vectors that are being compared have the same length. For this purpose we usually scale all vectors to unit length ($\frac{\vec{v}}{||\vec{v}||_2}$).
+
+\section{Matrices}
+Matrices are very closely related to vectors. A matrix is a two-dimensional array of numbers. A matrix can be written as a list of column-vectors or row-vectors. The notation $\mat{X} \in \R^{n \times m}$ represents a matrix of $n$ rows and $m$ columns. The notation $\mat{X} \in \R^{n \times 1}$ represents a column-vector of $n$ rows and $1$ column. The notation $\mat{X} \in \R^{1 \times m}$ represents a row-vector of $1$ row and $m$ columns.
+\section{Derivatives}
+\section{Probabilities}
+
+\framedtext{\color{red}{TODO:}}
+

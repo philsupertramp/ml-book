@@ -39,3 +39,41 @@
   \label{fig:ncc_batched_streaming}
 \end{figure}
 
+\chapter{Code Listings}
+\label{ch:code-listings}
+\begin{figure}[!h]
+  
+  \begin{lstlisting}[language=Python, caption={K-Nearest Neighbor Classifier (KNN) inference implementation optimized for $N>>D$}, label={alg:knn_inference_optimized_0}]
+  def knn(X_test, y_test, X_train, y_train, k):
+    classes = np.unique(y_train)
+    y_pred = np.zeros(len(X_test))
+    # compute all distances
+    distances = euclidean_distances(X_train, X_test)
+    # select closest K training samples for each test sample
+    k_neighbors = distances.argsort(axis=0)[:k]
+    neighbors = y_train[k_neighbors]
+    class_counts = np.zeros((len(X_test), len(classes)))
+    # count occurences
+    for cl_idx, cl in enumerate(classes):
+      class_counts[:, cl_idx] = np.sum(neighbors==cl, axis=0)
+    # select most occuring label
+    return np.array([classes[counts.argmax()] for counts in class_counts])
+  \end{lstlisting}
+\end{figure}
+\begin{figure}[!h]
+  
+  \begin{lstlisting}[language=Python, caption={K-Nearest Neighbor Classifier (KNN) inference implementation optimized for $N\approx D$}, label={alg:knn_inference_optimized_1}]
+def knn(X_test, y_test, X_train, y_train, k):
+  classes = np.unique(y_train)
+
+  y_pred = []
+  for x in X_test:
+    # calculate distances, sort them and use K first labes
+    y_pred_idx = np.linalg.norm((X_train - x), axis=1).argsort()[:k]
+    # count label occurrences, select label with most occurrence
+    c_idx = np.array([sum(y_train[y_pred_idx]==c) for c in classes]).argmax()
+    y_pred.append(classes[c_idx])
+  return np.array(y_pred)
+  \end{lstlisting}
+\end{figure}
+

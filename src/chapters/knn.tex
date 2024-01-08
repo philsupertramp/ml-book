@@ -1,4 +1,172 @@
 \chapter{Nearest Neighbor Classifier}
 \label{ch:knn}
+In this chapter we will introduce the first, very simple, non-linear classifier that is used frequently in practice.
+The \emph{nearest neighbor classifier}, also called K-Nearest Neighbor (KNN) classifier, is a non-parametric classifier, which means that it does not make any assumptions about the underlying distribution of the data.
+It is a so-called \emph{lazy learner}, which means that it does not learn a model from the training data, but instead memorizes it.
+Similar to the NCC from the previous chapter, the KNN is very simple to implement, well interpretable, but very hard to outperform.
+
+\section{Motivation}
+The previous chapter introduced linear classifiers and we looked closer into the NCC algorithm.
+We used the NCC algorithm to derive the general form of a linear classifier \cref{eq:linear_classifier}.\\
+This general form introduced the question of what the best choice for the weight vector $\vec{\omega}$ and bias $\beta$ is.
+We saw that using the difference of the class means as the weight vector will result in the NCC algorithm.\\
+But there are many other methods that can be implemented, such as \textit{Logistic Regression (LogReg)}, \textit{Support Vector Machines (SVMs)}, \textit{Perceptrons} or \textit{Ridge Regression}.\\
+All these methods have different approaches to calculate the weight vector $\vec{\omega}$ and the required bias term $\beta$.
+
+For the nearest centroid classifier $\vec{\omega}$ and $\beta$ is defined as
+\begin{align*}
+  \vec{\omega} &= \vec{\mu}_1 - \vec{\mu}_2\\
+  \beta &= \frac{1}{2} \left( \vec{\mu}_1^T \vec{\mu}_1 - \vec{\mu}_2^T \vec{\mu}_2 \right)
+\end{align*}
+But there are problems with linear classification as we've seen in Section \ref{sec:linear_classification}.
+
+For instance consider the XOR-problem, which is shown in Figure \ref{fig:linear_classification_xor_problem}, a very simple non-linear classification problem, or the non-linear problem shown in Figure \ref{fig:linear_classification_non_linear_problem}.
+Both problems require multiple lines or a curve to seperate both classes.
+
+We've seen that we could transform the incoming data into linearity, e.g. computing distances to the $(0, 0)$ point, but this is not always possible.
+Generally speaking, we might not even know how the data is distributed and how to transform it into linearity.
+Let alone the fact that our training data might only be a small subset of the whole data we might encounter when using our classifier in the real world.
+So instead of trying to engineer a transformation of the data into linearity, we will apply an algorithm that can handle this type of data, namely we will use a non-linear classifier, which is the KNN classifier.
+
+\section{K-Nearest Neighbor Classifier}
+In contrast to the NCC algorithm, the KNN algorithm is much simpler.
+Instead of computing centroids to represent classes, the KNN algorithm simply memorizes the training data.
+The main idea is the following
+\begin{enumerate}
+  \item Find $k$ nearest/closest neighbors for new data point $\vec{x}$
+  \item look up labels for these $k$ closest neighbors
+  \item assign the majority vote, the label occuring most frequently, of the labels to $\vec{x}$
+\end{enumerate}
+Firstly, we will look at a simplistic example to get a better understanding of the algorithm.
+Afterwards, we will look at the algorithm in more detail and discuss some of its properties.
+
+\subsection{Examples}
+\framedtext{\color{red}{TODO: add initial example plot here}}\\
+In Figure \ref{fig:knn_example} we can see a simple example of the KNN algorithm.
+The red and blue data points represent the training data with its two classes.
+Imagine we want to classify the green data point and we want to use the KNN algorithm with $k=3$.
+So first, we need to find the three closest neighbors to the green data point, which are indicated by the connecting lines.
+Then we look up the labels of these data points, in this case we see two blue ones and a red one.
+Since we have a majority vote, we assign the label blue to the green data point.\\
+And that's the gist of the KNN algorithm.
+
+As previously stated, one great aspect of KNN is that we don't need to compute anything upfront, such as centroids for NCC, no for KNN the data is the model.
+But as for NCC we need to use a distance function.
+Similar to the NCC, this is usually the Euclidean distance/norm
+\begin{equation*}
+  d(\vec{x}_i, \vec{x}_j) = \norm{\vec{x}_i - \vec{x}_j}_2 = \sqrt{\sum_{i=1}^D (x_i - y_i)^2}
+\end{equation*}
+where $i, j \in [1,\dots,N]$, $N$ the number of samples and $D$ is the number of dimensions of the data.
+
+\section{Implementation}
+
+The implementation of the inference of the KNN algorithm is very simple. You can find a Python implementation of it in Algorithm \ref{alg:knn_inference}.
+As you can see that it is a very simple implementation using raw Python and NumPy without leveraging any of the performance optimizations that are available when using matrix operations.
+An optimized implementation of the KNN algorithm can be found in the appendix section under Algorithm \ref{alg:knn_inference_optimized_0} and Algorithm \ref{alg:knn_inference_optimized_1} or in the \textit{scikit-learn} library~\cite{scikit-learn}.
+
+\begin{lstlisting}[language=Python, caption=KNN inference, label={alg:knn_inference}]
+def knn(X_test, X_train, y_train, k):
+  classes = np.unique(y_train)
+  y_pred = np.zeros(len(X_test))
+  for xtest_idx in range(X_test.shape[0]):
+    distance = X_train - X_test[xtest_idx,:]
+    # 1. find k closest neighbors
+    k_neighbors = np.linalg.norm(distance, axis=1).argsort()[:k]
+    class_counts = np.zeros(len(classes))
+    # 2. count class occurences
+    for cl_idx, cl in enumerate(classes):
+      class_counts[cl_idx] = np.sum(y_train[k_neighbors]==cl)
+    # 3. assign majority vote
+    y_pred[xtest_idx] = classes[class_counts.argmax()]
+  return y_pred
+\end{lstlisting}
+From the implementation we can see that the KNN algorithm is very simple and mostly straightforward to the three steps we've outlined in the beginning.
+We use two for-loops to iterate over each sample of the test data then over each class label inside the training data to perform the actual KNN inference.\newline
+The two optimized implementations in the appendix section use matrix operations to speed up the inference process.
+There is a need of two implementations, because both implementations are optimized for different use cases.
+The first implementation is optimized for inference cases when the number of dimensions is significantly smaller than the number of samples in the training data, short $D << N$.
+The second one for cases when the number of dimensions is very close to the number of samples in the training data, short $D \approx N$.
+
+\section{More Examples}
+In Figures \ref{fig:knn_example_1} and \ref{fig:knn_example_2} we can see two more examples of the KNN algorithm with different values for $k$ applied to the sample data.
+In Figure \ref{fig:knn_example_1} with $k=1$ we can see very complex decision boundaries of the KNN algorithm.
+If we increase $k$ to for instance $k=15$ as shown in Figure \ref{fig:knn_example_2} we can see that the decision boundaries become much smoother more similar to the NCC algorithm.
+Both figures visualize the decision boundaries of the KNN algorithm for the sample data.
+For each plot we initialize a very fine grained grid for which we assign a class or color based on the label assigned by the KNN algorithm.
+Just like in the decision boundaries in the previous chapter (Figure \ref{fig:ncc}).
+In comparison we can see that the decision boundaries are linear for the NCC algorithm (straight lines) and non-linear for the KNN algorithm.
+A smoother DB is better in the case shown in the two figures here, because it is a linearly seperable problem.\\
+But if we consider for example the XOR-problem, from the previous chapter. And add some noise to the training samples, we can see that the KNN algorithm is able to handle this problem, while the NCC algorithm was not.
+\framedtext{\color{red}{TODO: add XOR problem with noise and KNN example}}
+Figure \ref{fig:knn_xor_problem} shows the XOR-problem with noise and the decision boundaries of the KNN algorithm.
+
+\section{Problems with KNN}
+The KNN algorithm is a very simple algorithm, but it has some problems.
+Through the previous section we can observe that it seems to be crutial to choose the right value for $k$.
+A small value can lead to complex decision boundaries and a large value can lead to very smooth ones.\\
+If we consider $N$ data points $\vec{x}\in\R^D$ for every prediction, then finding the $k$ nearest neighbors requires $\mathcal{O}(N_1\cdot N_2\cdot D)$ operations.
+For $N_1$ training samples and $N_2$ test samples each with $D$ dimensions.
+This is a very expensive operation, especially if $N_1$ is very big.
+Some speedup can be gained by applying different techniques, such as \textit{KD-Trees} or \textit{Ball-Trees}~\cite{scikit-learn} for numeric or low dimensional data (1-30 dimensions).
+For high dimensional data, e.g. $N$-Grams of text, \textit{Locality Sensitive Hashing (LSH)}~\cite{scikit-learn} can be used to speed up the search for nearest neighbors. This is for example implemented in ElasticSearch~\cite{elasticsearch}.
+But even with these techniques, the KNN algorithm is still very slow, because it needs to compute the distance to all training samples for every prediction.
+
+\section{Parameter $k$}
+Now, we will look more into the parameter $k$, and find out how to chose it.
+$k$ is a \textit{hyperparameter}.
+Hyperparameters are parameters that need to be set before fitting an ML-model.
+These HPs can be parameters like $k$ that influence predictions, but they can also be paramters that influence the training process of the model.
+For KNN $k$ controls the complexity of its DBs and hence the complexity of its predictions.
+In many real life applications we look at data that is rather complex and non-linear, because it is noisy or high dimensional.
+Therefore, if we choose $k$ too small our model will \textit{overfit} the training data.
+This is called \texit{overfitting}, and is one of the biggest problems when working with ML algorithms.
+Overfitting is a problem, because the model will predict noise from the training data and is not capable of predicting new, unknown data points correctly.
+This can be solved by decreasing the complexity of the model, e.g. by increasing $k$, because this will always
+result in smoother DBs, but decrease the accuracy of the model in relation to the training data.
+If $k$ is chosen too large, the model will \textit{underfit} the training data.
+
+Imagine this: When you're in school your math teacher is explaining some formula to you. You get introduced to it in a specific form.
+All your exercises contain that same notation and variable names for the rest of the year.
+The next year the teacher changes and suddenly your grades drop significantly. What happened?\\
+Because your first teacher never changed elements of the formula you mezmorized it, instead of learning the underlying concept.
+So now, when the new teacher changes the notation, you're not able to apply the formula anymore, because you don't understand the underlying concept.
+This could have been avoided by teaching you variations of the formula, so you can learn it in a more generalized way.
+
+This has actually happend to me. In school and for the first twelve math-learning years of my life I was taught the so called \textit{Midnight formula}, a formula to compute roots of quadratic functions, in the following form
+\begin{equation*}
+  x_{1,2} = \frac{-b\pm\sqrt{\left(b^2-4ac\right)}}{2a} 
+\end{equation*}
+where $a$, $b$ and $c$ are the coefficients of the quadratic equation $ax^2+bx+c=0$.
+I then moved into a different state to study Mathematics.
+In the first semester I had to take courses in Linear Algebra and Analysis.
+And in both cases we solved quadratic equations, but the formula was completely different, the more flexible $pq$-formula
+\begin{equation*}
+  x_{1,2} = -\frac{p}{2}\pm\sqrt{\left(\frac{p}{2}\right)^2-q}
+\end{equation*}
+This was a huge struggle for me and I had to re-learn an approach I felt so comfortable with, because all exercises and later examples we had to solved where build to use the $pq$-formula.
+Essentially, I understood the benefit of knowing multiple approaches to solve the same problem, because it allows you to solve more problems in a generalized way.
+
+These are examples of overfitting. And as we can see this applies to ML algorithms as well.
+
+\textbf{Note:} We should always evaluate that on data is unknown to the model. But more on that in Chapter \ref{ch:model-evaluation}.
+\section{Hyperparameter Optimization}
+\label{sec:hpo}
+Thankfully, there is a technique to choose the right value for $k$. This process is called \textit{Hyperparameter Optimization (HPO)} or \textit{Model Selection}.\\
+There are several options to perform HPO, but the most common one is \textit{Grid Search}.
+Grid Search is a very simple approach, but it is very expensive, because it tries out all possible combinations of HPs, a more brute-force approach.
+Essentially, you define a grid of HPs and the algorithm will try out all possible combinations of HPs.
+At the end you can choose the best combination of HPs out of the ones restrained by the grid.\\
+Using stochastic methods this process can be improved, for instance the \textit{Random Search} algorithm.
+This works very well for small HP spaces, but it is not guaranteed to find the best HPs.
+Random Search is a more recent approach and was introduced in 2012 by Bergstra and Bengio~\cite{bergstra2012random}.
+As their introduction states, Random Search is a more efficient approach than Grid Search for Neural Networks, because it is able to find good HPs faster than Grid Search.\\
+Another approach is \textit{Bayesian Optimization (BO)}.
+BO is a more sophisticated approach, because it uses a probabilistic model to find the best HPs, which is why it is more efficient than Grid Search and Random Search.
+You can read more about BO in the paper by Peter I. Frazier~\cite{frazier2018tutorial}.
+
+For now and in the course of this book we will use Grid Search, because it is very simple to implement and understand.
+
+\subsection{Grid Search with Cross-Validation}
+
 \framedtext{\color{red}{TODO:}}
 

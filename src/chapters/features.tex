@@ -2,7 +2,8 @@
 \label{ch:feature-extraction}
 In this chapter we will talk about feature extraction, which is an essential part of any ML project/workflow.
 We will introduce these by looking at a simple example and then look at some more advanced techniques.
-After we covered most common approaches we will look into a very important concept, \underline{Machine Learning Pipelines}.
+This chapter is rather example driven and less theoretical, some techniques will only be introduced and then thoroughly explained in later chapters.
+Here, it is rather important to understand the concept and the idea behind the techniques.
 
 \section{Motivation}
 Feature Extraction describes the transformations from any kind of data to vectors.
@@ -89,6 +90,34 @@ The first three examples are called \textit{nominal} categorical features, becau
 To use these features in a ML model we need to transform them into a vector representation.
 Here we will introduce the technique of \textit{One-Hot-Encoding} (OHE) to transform categorical features into a vector representation, but there are also
 other techniques like for neural networks so called \textit{Embeddings}.
+\subsection{Integer Encoding}
+The first and by far the easiest approach to transform categorical features into a vector representation is to assign each category a unique integer value.
+This is called \textit{Iteger Encoding} and rather straight forward.
+We simply assign each category a unique integer value, e.g.
+\begin{itemize}
+  \item $red \rightarrow 0$
+  \item $green \rightarrow 1$
+  \item $blue \rightarrow 2$
+\end{itemize}
+or
+\begin{itemize}
+  \item $dog \rightarrow 0$
+  \item $cat \rightarrow 1$
+  \item $mouse \rightarrow 2$
+  \item $horse \rightarrow 3$
+\end{itemize}
+As you can see, we assign each category a unique integer value, which we can then use as a one-dimensional vector representation.
+This approach is also implemented in \lstinline{sklearn.preprocessing.LabelEncoder}.
+This entity is called LabelEncoder due to the fact that it is used to encode labels, e.g. for classification tasks.
+But this doesn't hinder us to use it for other purposes such as feature extraction.
+A simple example in pure NumPy is shown in \coderef{code:integer-encoding}.
+
+\begin{lstlisting}[language=Python, caption={Integer Encoding in NumPy}, label={code:integer-encoding}]
+def integer_encoding(X):
+  unique_values = set(X)
+  mapping = {value: i for i, value in enumerate(unique_values)}
+  return np.array([mapping[x] for x in X])
+\end{lstlisting}
 \subsection{One-Hot-Encoding}
 We assume we have a fixed set of categorical values, e.g. $C = \{red, green, blue\}$. Then to generate the one-hot-encoding we first need to compute the cardinality of $C$.
 The cardinality of a set is the number of elements in the set. In our example the cardinality of $C$ is $|C| = 3$. This means we need to transform each categorical value into a row-vector of length $|C|$.
@@ -102,12 +131,202 @@ By doing that categories can be easily represented as vectors.
 This is also implemented in \lstinline{sklearn.preprocessing.OneHotEncoder}.
 An example for using this approach are bag-of-words vectors, which we will look into in a second.
 
-\subsection{One-hot-Encoding: Problems}
+\subsubsection{One-hot-Encoding: Problems}
 One of the main problems of OHE is that the cardinality of the categorical feature needs to be estimated upfront, i.e. prior to creation of the OHE vectors.
 Therefore new items/categories can not be represented. Moreover, we lose the information on similarity between the categories, e.g. "light-blue" is as different as "green" to "blue".
+\subsubsection{Example}
+As previously mentioned, we can use sklearn's \lstinline{sklearn.preprocessing.OneHotEncoder} to create OHE vectors, but this can also be done using pure NumPy.
+\begin{lstlisting}[language=Python, caption={One-Hot-Encoding in NumPy}, label={code:one-hot-encoding}]
+def one_hot_encoding(X):
+  unique_values = set(X)
+  mapping = {value: i for i, value in enumerate(unique_values)}
+  one_hot_vectors = np.zeros((len(X), len(unique_values)))
+  for i, x in enumerate(X):
+    one_hot_vectors[i, mapping[x]] = 1
+  return one_hot_vectors
+\end{lstlisting}
+Important to note is here, similar to the integer encoding, we need to ensure that no new categories are introduced during inference time. Otherwise our model is incapable of predicting correct values.
+
 
 \textbf{Note} In many situations we will face mixtures of continuous and categorical features. Usually we need to apply different extraction methods
 to single features to put together a general feature representation of a sample.
+
+\section{High-Dimensional Features}
+In some scenarios we have to deal with high-dimensional features of a single type, i.e. big data sets with many features such as medical tests or sensory data.
+This is especially true for image data, where each pixel is a feature. For example, a $100 \times 100$ pixel image has $10,000$ features.
+In this section we will introduce two techniques to reduce the dimensionality of our data.
+\subsection{Principal Component Analysis (PCA)}
+The first technique we will look into is Principal Component Analysis (PCA). We will look closer into PCA in the future (Chapter \ref{ch:pca}), but for now it is important to understand the concept.
+PCA is a technique to reduce the dimensionality of our data by projecting it onto a lower dimensional space.
+The idea is to find the directions of maximum variance in high-dimensional data and project it onto a lower dimensional space.
+This is done by computing the covariance matrix of the data and then computing the eigenvectors of this matrix.
+The eigenvectors with the highest eigenvalues are the directions of maximum variance.\newline
+\textbf{Note:} Due to the nature of PCA and the computation of the covariance matrix, it is important to mention that the PCA can only transform the data onto a maximum of $\min(d, N)$ dimensions.
+
+\subsubsection{Example}
+Imagine a very simple example in which we have a binary data set $X \in P^{N \times d}$ with $P = \{0, 1\}, d = 2000$ and $N = 2000$.
+We know that about 50\% of the dimensions of each data point are $0$ and the other 50\% are $1$.
+Now, we could just use this data as is, train a model and call it a day.
+But since we know that most of the data is "off" we could reduce the dimensionality of our data set by projecting it onto a lower dimensional space.
+This will increase the speed of our model and reduce the memory requirements.
+Therefore we want to reduce our data set to $\tilde{X} \in P^{N \times \tilde{d}}$ with $\tilde{d} = \frac{d}{2}$.
+And this can be done via PCA.
+\begin{lstlisting}[language=Python, caption={PCA in Python}, label={code:pca}]
+from sklearn.decomposition import PCA
+import numpy as np
+
+np.random.seed(42)
+X = np.random.randint(0, 2, size=(2000, 2000))
+
+pca = PCA(n_components=X.shape[1] // 2)
+pca.fit(X)
+X_pca = pca.transform(X)
+\end{lstlisting}
+The code in \coderef{code:pca} shows how to use the PCA implementation of scikit-learn in Python.
+We first create a random binary data set $X$ with $N = 2000$ and $d = 2000$, visualized in Figure \ref{fig:pca-1}.
+Then we create a PCA object with the number of components we want to reduce our data set to, in this case $\tilde{d} = 1000$.
+The transformed data set $X_{pca}$ is visualized in Figure \ref{fig:pca-2}.
+
+\begin{figure}
+  \centering
+  \begin{minipage}[t]{.45\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{images/pca-1.eps}
+    \caption{Original data set $X$}
+    \label{fig:pca-1}
+\end{minipage}
+\hfill
+  \begin{minipage}[t]{.45\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{images/pca-2.eps}
+    \caption{Transformed data set $X_{pca}$}
+    \label{fig:pca-2}
+\end{minipage}
+\end{figure}
+
+Both plots show the full data set in the same scale, but the transformed data set $X_{pca}$ is only half the size (width) of the original data set $X$.
+As you can see, the transformed data set $X_{pca}$ is still very similar to the original data set $X$, but it is only half the size and contains less noise.
+
+In most cases of high-dimensional data it is advisable to apply PCA to reduce the dimensionality of the data set.
+But there are also cases where PCA is not advisable, e.g. when the data is not linearly separable.
+In this case we can use a different technique called \textit{t-Distributed Stochastic Neighbor Embedding} (t-SNE).
+\subsection{Linear Discriminant Analysis (LDA)}
+The second technique we will look into is Linear Discriminant Analysis (LDA). We will look closer into LDA in the future (Chapter \ref{ch:lda}).
+Similar to PCA, LDA is a technique to reduce the dimensionality of linear data by projecting it onto a lower dimensional space.
+But other than PCA, LDA is a supervised technique, which means it requires labels for the data set.
+The idea is to find the directions of maximum variance in high-dimensional data and project it onto a lower dimensional space.
+As in PCA, this is done by computing the covariance matrix of the data and then computing the eigenvectors of this matrix.
+Again, the eigenvectors with the highest eigenvalues are the directions of maximum variance.
+But unlike PCA, LDA also takes the labels into account and tries to maximize the distance between the classes.
+Because of that, LDA is a supervised technique and can reduce the data to maximum $C - 1$ dimensions, where $C$ is the number of classes.
+\subsubsection{Example}
+We will use the example of PCA again, but this time we will use the labels of the data set.
+Every image that contains $\min 50\%$ of the pixels with value $1$ is labeled as $1$, otherwise it is labeled as $0$.
+\begin{lstlisting}[language=Python, caption={LDA in Python}, label={code:lda}]
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+import numpy as np
+
+np.random.seed(42)
+X = np.random.randint(0, 2, size=(2000, 2000))
+y = np.sum(X, axis=1) >= 1000
+
+lda = LinearDiscriminantAnalysis()
+X_lda = lda.fit_transform(X, y)
+
+# Plotting
+print(f"Explained variance ratio: {lda.explained_variance_ratio_}")
+print(f"Intercept: {lda.intercept_}")
+print(f"Coef: {lda.coef_}")
+plt.scatter(X_lda, np.zeros_like(X_lda), c=y)
+plt.show()
+\end{lstlisting}
+You can find a visualization of the transformed data set $X_{lda}$ in Figure \ref{fig:lda-1}.
+Once the LDA is fitted, we can access the explained variance ratio, the intercept and the coefficients.
+The explained variance ratio is the ratio of the variance explained by each of the selected components.
+The intercept is the intercept of the decision function separating the classes.
+The coefficients are the coefficients of the features in the decision function.
+Figure \ref{fig:lda-2} shows an inference example of this trained LDA model.
+By performing a dot product between the coefficients and the data point and adding the intercept we get the decision function.
+If the decision function is greater than $0$ we predict $1$, otherwise $0$.
+
+\begin{figure}
+  \centering
+  \begin{minipage}[t]{.45\textwidth}
+  \centering
+  \includegraphics[width=.95\textwidth]{images/lda-1.eps}
+  \caption{Transformed data set $X_{lda}$}
+  \label{fig:lda-1}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{.45\textwidth}
+  \centering
+  \includegraphics[width=.95\textwidth]{images/lda-2.eps}
+  \caption{Inference example of LDA}
+  \label{fig:lda-2}
+\end{minipage}
+\end{figure}
+
+The code for this is straight forward and shown in \coderef{code:lda-inference}.
+\begin{lstlisting}[language=Python, caption={LDA inference in Python}, label={code:lda-inference}]
+def predict(X, lda):
+  return np.dot(X, lda.coef_.T) + lda.intercept_ > 0
+  # or return lda.transform(X) > 0
+\end{lstlisting}
+Hence, the model can be used for classification tasks as well as dimensionality reduction.
+We will see more about this in the dedicated chapters.
+
+
+\subsection{t-SNE}
+The last technique we will briefly look into is t-SNE, which again transforms high dimensional data to a lower dimensional space.
+But unlike PCA and LDA, t-SNE is a non-linear method, which means it can also be used for non-linear data.
+Apart from that, t-SNE, other than PCA, maps the data onto a two or three dimensional space, rather than $\min(d, N)$.
+This makes t-SNE especially a great tool for visualizing high-dimensional data.
+In this book we will only motivate the idea behind t-SNE, but not look into the details of the algorithm.
+If you are interested in the details, I highly recommend the original 2008 paper by Laurens van der Maaten~\cite{maaten2008visualizing}.
+\subsubsection{Example}
+Imagine a little more complex example than in the case of PCA.
+We have a data set $X \in \mathbb{R}^{N \times d}$ with $N = 2000$ and $d = 2000$.
+The data set is generated by sampling from a normal distribution $\mathcal{N}(0, 1)$ and then adding a constant $c$ to each data point.
+The constant $c$ is sampled from a normal distribution $\mathcal{N}(0, 1)$.
+\begin{lstlisting}[language=Python, caption={t-SNE in Python}, label={code:tsne}]
+from sklearn.manifold import TSNE
+import numpy as np
+
+np.random.seed(42)
+X = np.random.normal(0, 1, size=(2000, 2000))
+c = np.random.normal(0, 1, size=(2000, 1))
+X += c
+
+tsne = TSNE(n_components=1)
+X_tsne = tsne.fit_transform(X)
+\end{lstlisting}
+The code in \coderef{code:tsne} shows how to use the t-SNE implementation of scikit-learn in Python.
+We apply t-SNE to the data set $X$ and reduce the dimensionality to $\tilde{d} = 1$.
+The transformed data set $X_{tsne}$ is visualized in Figure \ref{fig:tsne-1}, the original data set $X$ is visualized in Figure \ref{fig:tsne-2}.
+For comparison you can also find the original data set $X$ and the transformed data set $X_{tsne}$ in the same plot in Figure \ref{fig:tsne-3}.
+\begin{figure}
+  \centering
+  \begin{minipage}[t]{.3\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{images/tsne-1.eps}
+    \caption{Transformed data set $X_{tsne}$}
+    \label{fig:tsne-1}
+\end{minipage}
+  \begin{minipage}[t]{.3\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{images/tsne-2.eps}
+    \caption{First component of original data set $X$}
+    \label{fig:tsne-2}
+\end{minipage}
+  \begin{minipage}[t]{.3\textwidth}
+    \centering
+    \includegraphics[width=.95\textwidth]{images/tsne-3.eps}
+    \caption{Combined plot of $X$ and $X_{tsne}$}
+    \label{fig:tsne-3}
+\end{minipage}
+\end{figure}
+This concludes our short introduction to dimensionality reduction techniques. We will see more about PCA and LDA in future chapters.
+
 \section{Text Features}
 The next data type we will look into is text data. Again, we have several options here and especially lately this data type enjoys great popularity and research.
 We will look at one approach more closely and shortly touch a few others.
@@ -143,6 +362,44 @@ How does this work?
 In the BoW approach $x$ is the vector of word occurrences. The name of an dimension is the word assigned to it.
 $\vec{x} \in \mathbb{N}^d$ where $d$ is the number of unique words, the \underline{word vocabulary}, in the text.
 $d$ needs to be determined prior to starting and can become quite big, which we will discuss in the following.
+\subsubsection{Example}
+Let's look at this example in code. We will use the previous example.
+\begin{lstlisting}[language=Python, caption={BoW-Features in Python}, label={code:bow}]
+from sklearn.feature_extraction.text import CountVectorizer
+
+text = "The tokenizer splits the text into tokens."
+vectorizer = CountVectorizer()
+
+# fit the vectorizer to the text
+vectorizer.fit([text])
+
+# transform the text into a BoW-Feature vector
+bow = vectorizer.transform([text])
+print(bow)
+\end{lstlisting}
+The code in \coderef{code:bow} shows how to use the BoW-Feature implementation of scikit-learn in Python.
+We first create a text, then we create a CountVectorizer object and fit it to the text.
+This is necessary to create the vocabulary of the text.
+Then we transform the text into a BoW-Feature vector.
+The output of the BoW-Feature vector is a sparse vector, which means that only the non-zero values are stored.
+Because the \lstinlinde{text} variable is used at the end to generate the BoW-Feature vector, the resulting bow vector does not contain any zeros.
+If we use for instance another phrase, e.g. "The tokenizer splits the text into tokens. The tokenizer splits the text into tokens." we get the following BoW-Feature vector
+\begin{lstlisting}[language=Python, caption={BoW-Features in Python}, label={code:bow}]
+from sklearn.feature_extraction.text import CountVectorizer
+
+train_text = "The tokenizer splits the text into tokens."
+test_text = "Tokenizers split text into tokens"
+
+vectorizer = CountVectorizer()
+
+# fit the vectorizer to the text
+vectorizer.fit([train_text])
+
+# transform the text into a BoW-Feature vector
+bow = vectorizer.transform([test_text])
+print(bow)
+\end{lstlisting}
+This resulting vector is rather sparse, it only contains values for the 1st, 3rd and 6th dimension due to the limitation through the original training text.
 \subsubsection{Problems}
 BoW-Features only account for the word historgram and due to that most of the natural language structure is lost.
 We lose for example the order of words, or context when processing multiple senteces at once.
@@ -168,24 +425,95 @@ E.g. Bi-Grams constst of two words
 If we would consider every combination of words the dimensionality of this new vector $\vec{x}$ will also significantly change, because we represent sequences of words instead of single words now.
 For the Bi-Gram example we get $x \in \mathbb{N}^{d^2}$ where $d$ is the number of unique Bi-Grams in the text.
 An implementation of BoW-Features is available in sklearn's \lstinline{sklearn.feature_extraction.text.CountVectorizer}.
+Usually, we see a word-frequency distribution in the shape of the distribution shown in Figure \ref{fig:word-freq-dist}.
+This plot is generated by counting the occurences of each word inside the book "Moby Dick" by Herman Melville.
+You can find the code to generate it in Listing \ref{code:moby-raw}
+
+\begin{lstlisting}[language=Python, caption={word-frequency histogram for Moby Dick}, label={code:moby-raw}]
+from sklearn.feature_extraction.text import CountVectorizer
+import gutenbergpy.textget
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+raw_book = gutenbergpy.textget.get_text_by_id(2701) # with headers
+clean_book = gutenbergpy.textget.strip_headers(raw_book) # without headers
+
+vectorizer = CountVectorizer()
+
+# fit the vectorizer to the text
+bow = vectorizer.fit_transform([clean_book])
+
+
+highest_bow = np.flip(bow.toarray()[0].argsort()[-100:])
+plt.figure(figsize=(20, 10))
+
+plt.bar(vectorizer.get_feature_names_out()[highest_bow],bow.toarray()[0][highest_bow])
+plt.xticks(rotation=90)
+plt.xlim([-0.5, 100])
+plt.xlabel('word')
+plt.ylabel('frequency')
+plt.title('word frequency of most frequent 100 words for "moby dick"')
+plt.show()
+\end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.95\textwidth]{images/moby-raw.eps}
+  \caption{word frequency distribution of 100 most frequent words in moby dick (https://www.gutenberg.org/ebooks/2701)}
+  \label{fig:word-freq-dist}
+\end{figure}
+We use this as a representational example for english language.
 
 \subsubsection{Character N-Grams}
 We will briefly look into another approach to BoW-Features, which is using character N-Grams instead of word N-Grams.
 This approach uses character sequences instead of word sequences. This approach is especially useful for languages with a rich morphology, e.g. German.
 Another great application is for language independent models, e.g. for language detection.
-Eseentially, we can select a tokenization method that fits our needs best, then transform these tokens into a BoW encoding.
+Essentially, we can select a tokenization method that fits our needs best, then transform these tokens into a BoW encoding.
+The \lstinline{*Vectorizer} implementations of sklearn allow to provide a tokenization function using the \lstinline{tokenizer} attribute, for example
+\begin{lstlisting}[language=Python, label={code:character-n-grams}]
+def tokenize(text, n=1):
+    if n < 1:
+        raise ValueError("n must be a positive integer")
+    
+    if (len(text) % n) != 0:
+      text += ''.join([' '] * (n- (len(text) % n)))
+    tokens = []
+    for i in range(0, len(text), n):
+        tokens.append(text[i:i + n])
+    return tokens
 
+print(tokenize('Foo bar', 2))
+# Out: ['Fo', 'o ', 'ba', 'r ']
+print(tokenize('Foo bar', 3))
+# Out: ['Foo', ' ba', 'r  ']
+print(tokenize('Foo bar', 9))
+# Out: ['Foo bar  ']
+print(tokenize('Foo bar', 10))
+# Out: ['Foo bar   ']
+\end{lstlisting}
+An application of this method using the CountVectorizer can be seen in Listing \ref{code:count-ngrams}
+\begin{lstlisting}[language=Python, label={code:count-ngrams}]
+vectorizer = CountVectorizer(tokenizer=tokenize)
+# alternative
+from functools import partial
+vectorizer = CountVectorizer(tokenizer=partial(tokenize, n=3))
+# or
+vectorizer = CountVectorizer(tokenizer=lambda x: tokenize(x, 3))
+\end{lstlisting}
 \subsubsection{Term Frequency - Inverse Document Frequency (TF-IDF)}
 One of the problems of using token occurrences is that natural language contains a lot of words that don't transfer information.
 Frequently occurring words like "the" are often not meaningful and will be weighted down by the inverse document frequency.
-Usually, we see a word-frequency distribution in the shape of the distribution shown in Figure \ref{fig:word-freq-dist}.
+
+
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=.95\textwidth]{images/word-distribution.png}
-  \caption{Word frequency distribution of 100 most frequent words in Moby Dick (https://www.gutenberg.org/ebooks/2701)}
-  \label{fig:word-freq-dist}
+  \includegraphics[width=.95\textwidth]{images/moby-tfidf.eps}
+  \caption{word frequency distribution of 100 most frequent words in moby dick (https://www.gutenberg.org/ebooks/2701)}
+  \label{fig:moby-tfidf}
 \end{figure}
+
 In order to downweight the frequently occurring words, to be able to only select relevant words, we apply the inverse
 document frequency
 \begin{equation}
@@ -205,13 +533,80 @@ tf \eqref{eq:TF} and idf \eqref{eq:IDF} can be combined by forming their product
 A model incorporating this metric is TFIDF which is essentially a BoW model with applied term frequency and idf.
 
 In sklearn you can find it under \lstinline{sklearn.feature_extraction.text.TfidfVectorizer}.
+Applying this technique to the Moby Dick book can be done by simply replacing the CountVectorizer with TfidfVectorizer as showcased in Listing \ref{code:moby-tfidf}
+\begin{lstlisting}[language=Python, caption={word-frequency histogram for Moby Dick using TF-IDF}, label={code:moby-tfidf}]
+from sklearn.feature_extraction.text import TfidfVectorizer
+import gutenbergpy.textget
+import matplotlib.pyplot as plt
+import numpy as np
 
+
+raw_book = gutenbergpy.textget.get_text_by_id(2701) # with headers
+clean_book = gutenbergpy.textget.strip_headers(raw_book) # without headers
+
+vectorizer = TfidfVectorizer()
+
+# fit the vectorizer to the text
+bow = vectorizer.fit_transform([clean_book])
+
+
+highest_bow = np.flip(bow.toarray()[0].argsort()[-100:])
+plt.figure(figsize=(20, 10))
+
+plt.bar(vectorizer.get_feature_names_out()[highest_bow],bow.toarray()[0][highest_bow])
+plt.xticks(rotation=90)
+plt.xlim([-0.5, 100])
+plt.xlabel('word')
+plt.ylabel('frequency')
+plt.title('word frequency of most frequent 100 words for "moby dick"')
+plt.show()
+\end{lstlisting}
+
+
+Now this application uses the TF-IDF method to generate the BoW vectors, as you can see the resulting distribution still contains words that occur rather frequently in the english language, e.g. "the" on first place.
+The main difference here is that we compute the TFIDF instead of the occurrence-frequency, hence the different scale along the $y$-axis in Figure \ref{fig:moby-tfidf}.
 \subsubsection{Stop-Words}
 Another alternative to remove noice from our data are Stop-Words.
 Instead of computing tf and idf, we have a set of predefined words to exclude from the document.
 For most languages we can do that and prepare a set of words that won't change frequently.
+Applying stop words is pretty much straight forward. We simply remove the stop words from all incoming text documents.
+This is usually done via a \lstinline{preprocessing} method.
+A working code sample can be found in Listing \ref{code:moby-stopwords}.
+
+\begin{lstlisting}[language=Python, caption={Reduced word-frequency histogram for Moby Dick excluding stop words.}, label={code:moby-stopwords}]
+from sklearn.feature_extraction import text
+
+# initialize vectorizer with stop words
+my_stop_words = text.ENGLISH_STOP_WORDS.union(["book"])
+vectorizer = text.CountVectorizer(stop_words=list(my_stop_words))
+
+# fit the vectorizer to the text
+bow = vectorizer.fit_transform([clean_book])
+highest_bow = np.flip(bow.toarray()[0].argsort()[-100:])
+
+plt.figure(figsize=(20, 10))
+plt.bar(vectorizer.get_feature_names_out()[highest_bow],bow.toarray()[0][highest_bow])
+plt.xticks(rotation=90)
+plt.xlim([-0.5, 100])
+plt.xlabel('word')
+plt.ylabel('frequency')
+plt.title('word frequency of most frequent 100 words, excluding stop words, for "moby dick"')
+plt.show()
+\end{lstlisting}
+Figure \ref{fig:moby-stopwords} visualizes the histogram for the reduced text.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.95\textwidth]{images/moby-stopwords.eps}
+  \caption{word frequency distribution of 100 most frequent words in moby dick (https://www.gutenberg.org/ebooks/2701)}
+  \label{fig:moby-stopwords}
+\end{figure}
+Comparing the stopword plot with the tf-idf one, we can see similarity in the distributions, but several terms differ.
 From my experience they seem to work great, and I use them more often than TF-IDF.
 
+Sklearn allows to provide stopwords to the TfidfVectorizer, too. The adjusted object initialization is similar to the CountVectorizer
+\begin{lstlisting}[language=Python, label={code:tfidf-stopwords}]
+vectorizer = TfidfVectorizer(stop_words=list(my_stop_words))
+\end{lstlisting}
 \subsubsection{Expensive N-Grams}
 We quickly jump back to the N-Gram tokens and discuss the dimensionality of our BoW vectors.
 
@@ -615,6 +1010,13 @@ Most of them are very easy to use, but hard to understand.
 
 \subsection{Classic Computer Vision}
 Before 2012 (ImageNet Moment) researches used classic CV methods to extract features from images.
+These methods are still used today, but mostly for specific tasks, e.g. object detection.
+We will look into some of these methods, but only briefly.
+\subsubsection{Tresholding}
+\subsubsection{Normalization}
+\subsubsection{Edge Detection}
+\subsubsection{Corner Detection}
+\subsubsection{Histogram of Oriented Gradients}
 Mostly Furrier Decomposition was applied, this measures spacial frequencies of patches of the image.
 The resulting frequency strength of each patch is then used as a feature.
 These spacial frequencies are gradients in the image. High spacial frequencies are edges,
@@ -633,9 +1035,13 @@ HOG suits very well for object detection, because it is very robust to changes i
 For this reason it is widely used in e.g. self-driving cars for pedestrian recognition.
 They work good if we only want to encode a shape, e.g. a pedestrian, but not for more complex tasks like face recognition.
 In skimage you can find the HOG extractor in \lstinline{skimage.feature.hog}.
-
-\subsection{Convolutional Neural Networks}
-Another more modern way of dealing with images is using Convolutional Neural Networks (CNNs).
+\subsubsection{Principal Component Analysis}
+\subsection{New School Computer Vision}
+As previously stated since the ImageNet moment in 2012, the field of computer vision has changed drastically.
+With the increase in computational power and the introduction of GPUs, it became possible to train very large neural network architectures on very large data sets.
+Over time researchers found out that these models are able to learn very good representations of features by themselves.
+\subsubsection{Convolutional Neural Networks}
+A more modern way of dealing with images is using Convolutional Neural Networks (CNNs).
 They are state-of-the-art (SOTA) for image classification and object detection.
 We don't have much time to look detaied into them, but the key takeaway here is:
 
@@ -768,3 +1174,100 @@ Applying those three matrices to our image $X$ we get three images $X_{red}, X_{
 
 \framedtext{\color{red}{TODO:}} Implement example for CNN feature extraction
 
+\subsubsection{Contrastive Image-Language Pre-training (CLIP)}
+Almost a decade after the ImageNet moment, OpenAI introduced CLIP\cite{radford2021learning} in 2021.
+CLIP is a new way of dealing with images and text. It is a neural network architecture that is trained on a large data set of images and text and capable
+of generating embeddings for both images and text, in the same vector space.
+This allows us to compare images and text in the same vector space, which is a very powerful tool.
+
+CLIP is based on the Transformer architecture, which we will look into in Chapter \ref{ch:neural-networks} (Section \ref{sec:transformers}).
+
+\section{Audio Features}
+In the realm of audio data we can also extract features, but the methods are not as advanced as for instance for images.
+The most common feature extraction method is the Mel-Frequency Cepstral Coefficients (MFCCs).
+MFCCs are a representation of the short-term power spectrum of a sound, based on a linear cosine transform of a log power spectrum on a nonlinear mel scale of frequency.
+We can implement MFCCs quite easily using the \lstinline{librosa} library.
+\begin{lstlisting}[language=Python, caption={MFCC extraction example using librosa.}, label={code:mfcc}]
+import librosa
+
+# Load the audio file
+y, sr = librosa.load(librosa.util.example('fishin'))
+
+# Extract the MFCCs
+mfcc = librosa.feature.mfcc(y=y, sr=sr)
+
+# Plot the MFCCs
+librosa.display.specshow(mfcc, x_axis='time')
+\end{lstlisting}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.95\textwidth]{images/mfcc-spec.eps}
+  \caption{Extracted MFCC-spectogram from librosa's audio sample "fishin".}
+  \label{fig:mfcc}
+\end{figure}
+Apart from using the extracted MFCCs as features for our ML model, recently there have been some attempts to use plots like the one in Figure \ref{fig:mfcc} as features, train a CNN on them and then use the MFCC-CNN pipeline as a feature extractor.
+This approach is called \textit{end-to-end} learning, because the whole pipeline is trained end-to-end.
+
+\section{Time Series Features}
+The last form of data we will look into are time series.
+Time series are a sequence of data points indexed in time order, for instance stock prices, weather data or other things that are recurrently measured over time.
+Time series are a special form of data, because they are ordered in a specific dimension, time.
+This means that we can not use the same feature extraction methods as for the other data types.
+One of the most common feature extraction methods for time series are the so called \textit{rolling statistics}.
+Rolling statistics are a way to extract features from time series by applying a function to a rolling window of the time series.
+For instance, we can compute the mean of the last 10 data points of a time series.
+This would result in a new time series, where each data point is the mean of the last 10 data points of the original time series.
+We can apply this method to compute the mean, median, standard deviation, etc. of a rolling window of the time series.
+A possible implementation of this method is shown in \coderef{code:rolling-statistics}.
+\begin{lstlisting}[language=Python, caption={Rolling statistics example}, label={code:rolling-statistics}]
+import pandas as pd
+
+# Load the data set
+df = pd.read_csv('data/GOOG.csv')
+
+# Compute the rolling mean
+df['rolling_mean'] = df['Close'].rolling(10).mean()
+\end{lstlisting}
+The code in \coderef{code:rolling-statistics} will load the Google stock price data set (\lstinline{2023/01/01 - 2024/01/01}) and then compute the rolling mean of the last 10 data points.
+Using the method \lstinline{pandas.DataFrame.rolling} we can compute the rolling mean, median, standard deviation, etc. of a rolling window of the time series.
+
+Another method to extract features from time series is the \textit{Fourier Transform}.
+The Fourier Transform is a mathematical operation that decomposes a function into its constituent frequencies.
+The Fourier Transform is one of the most powerful tools in mathematics since a long time, and hence it is also very complex and hard to understand.
+But thankfully, we don't need to understand it thoroughly in order to use it.
+
+The Fourier Transform is a way to transform a function from the time domain to the frequency domain.
+This means that we can transform a time series into a frequency series.
+The Fourier Transform is a complex valued function, which means that it returns a complex number for each frequency.
+As a reminder, complex numbers consists of a real and an imaginary part.
+For FFT the real part is called the \textit{magnitude} and the imaginary part is called the \textit{phase}.
+The magnitude encodes the strength of the frequency and the phase encodes the shift of the frequency.
+Here, the magnitude is the most important part, because it encodes the strength of the frequency.
+For this reason the magnitude of FFT is also called the \textit{power spectrum}.
+We can use it to determine the strongest frequencies of a time series, similar to the PCA for regular high dimensional data.
+The phase is not as important, because it encodes the shift of the frequency, which is not as important for our task.
+
+We can see an example usage of the Fourier Transform in \coderef{code:fourier-transform} and a visualization of the Fourier Transform in Figure \ref{fig:fourier-transform}.
+\begin{lstlisting}[language=Python, caption={Fourier Transform example}, label={code:fourier-transform}]
+import numpy as np
+import pandas as pd
+
+# Load the data set
+df = pd.read_csv('data/GOOG.csv')
+
+# Compute the Fourier Transform
+fft = np.fft.fft(df['Close'])
+
+# Plot Fourier Transform vs. original time series
+plt.figure(figsize=(20, 10))
+plt.loglog(fft, label='fft')
+plt.loglog(df['CLOSE'], label='og')
+plt.legend()
+\end{lstlisting}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.95\textwidth]{images/fft.eps}
+  \caption{Comparison of Fourier Transform of Google stock price data set with original data set.}
+  \label{fig:fourier-transform}
+\end{figure}
